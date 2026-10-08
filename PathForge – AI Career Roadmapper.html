@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PathForge – AI Career Roadmapper</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f6f7fb;--card:#fff;--tx:#161a2b;--mut:#5b6280;--bd:#dde1ee;--pri:#4f46e5;--ok:#16a34a;
+--skill:#2563eb;--role:#7c3aed;--project:#ea580c;--cert:#0d9488}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1220;--card:#1a1f35;--tx:#eef0fa;--mut:#a3aac8;--bd:#2c3354;--pri:#818cf8;--ok:#4ade80}}
+:root[data-theme="dark"]{--bg:#0f1220;--card:#1a1f35;--tx:#eef0fa;--mut:#a3aac8;--bd:#2c3354;--pri:#818cf8;--ok:#4ade80}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*{box-sizing:border-box}
+body{margin:0;height:100%;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column}
+header{padding:12px 14px;background:var(--card);border-bottom:1px solid var(--bd)}
+h1{font-size:18px;margin:0 0 8px}h1 span{color:var(--pri)}
+form{display:flex;gap:8px;flex-wrap:wrap}
+input{flex:1 1 220px;padding:10px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font-size:15px}
+button{cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:9px 13px;font-size:14px}
+button.p{background:var(--pri);color:#fff;border-color:var(--pri);font-weight:600}
+button:focus-visible,input:focus-visible,svg:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+button:disabled{opacity:.6;cursor:wait}
+.bar{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:13px;color:var(--mut)}
+.prog{flex:1;height:8px;background:var(--bd);border-radius:6px;overflow:hidden}.prog i{display:block;height:100%;width:0;background:var(--ok);transition:width .4s}
+.note{font-size:12px;color:var(--mut)}
+main{flex:1;position:relative;min-height:0;overflow:hidden}
+svg{width:100%;height:100%;touch-action:none;cursor:grab;display:block}
+.msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--mut);pointer-events:none}
+.msg b{color:var(--tx)}
+.ctl{position:absolute;left:10px;bottom:10px;display:flex;flex-direction:column;gap:6px}
+.ctl button{width:38px;height:38px;padding:0;font-size:18px}
+.leg{position:absolute;right:10px;top:8px;font-size:11px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;max-width:60%}
+.leg span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:4px;background:var(--c)}
+aside{position:absolute;right:0;top:0;bottom:0;width:min(380px,100%);background:var(--card);border-left:1px solid var(--bd);padding:14px;overflow:auto;transform:translateX(105%);transition:transform .25s;box-shadow:-6px 0 20px #0003}
+aside.open{transform:none}
+@media (max-width:640px){aside{top:auto;height:70%;width:100%;border-left:0;border-top:1px solid var(--bd);transform:translateY(105%)}.leg{display:none}}
+aside h2{margin:0 24px 4px 0;font-size:17px}aside h3{font-size:13px;margin:14px 0 4px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+aside ul{margin:0;padding-left:18px;font-size:14px}aside p{font-size:14px;margin:4px 0}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;color:#fff;background:var(--c)}
+.x{position:absolute;right:10px;top:10px;padding:4px 9px}
+.node{cursor:pointer}.node rect{fill:var(--card);stroke-width:2}.node text{fill:var(--tx);font-size:12.5px}.node .sub{fill:var(--mut);font-size:10.5px}
+.node.done rect{fill:color-mix(in srgb,var(--ok) 18%,var(--card));stroke:var(--ok)!important}
+.node.sel rect{stroke-width:4}
+.edge{fill:none;stroke:var(--bd);stroke-width:2}.edge.done{stroke:var(--ok)}
+.ph{fill:var(--mut);font-size:12px;font-weight:700;text-transform:uppercase}
+.confetti{position:fixed;pointer-events:none;font-size:22px;animation:fall 1.4s ease-in forwards;z-index:9}
+@keyframes fall{to{transform:translateY(80vh) rotate(360deg);opacity:0}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Path<span>Forge</span> · AI Career Roadmapper</h1>
+  <form id="f">
+    <input id="goal" maxlength="120" aria-label="Your dream job" placeholder='e.g. "Full Stack Developer at a climate tech startup"'>
+    <button class="p" id="go">Generate roadmap</button>
+  </form>
+  <div class="bar"><span id="pt">0/0 done</span><div class="prog"><i id="pb"></i></div><span class="note">🤖 Roadmap & advice are AI-generated</span></div>
+</header>
+<main>
+  <svg id="sv" tabindex="0" role="img" aria-label="Interactive career roadmap. Drag to pan, scroll or use buttons to zoom, click a node for details."><g id="g"></g></svg>
+  <div class="msg" id="msg"><div><b>Type a hyper-specific dream job above.</b><br>You'll get a zoomable, clickable skill tree built by AI.</div></div>
+  <div class="leg"><span style="--c:var(--skill)">Skill</span><span style="--c:var(--role)">Role</span><span style="--c:var(--project)">Project</span><span style="--c:var(--cert)">Cert</span></div>
+  <div class="ctl"><button id="zi" aria-label="Zoom in">+</button><button id="zo" aria-label="Zoom out">−</button><button id="zf" aria-label="Fit to screen">⤢</button></div>
+  <aside id="as" aria-live="polite"></aside>
+</main>
+<script>
+(function(){
+var NS="http://www.w3.org/2000/svg",$=function(i){return document.getElementById(i)};
+var sv=$("sv"),g=$("g"),msg=$("msg"),as=$("as"),goalEl=$("goal"),goBtn=$("go");
+var S={goal:"",nodes:[],edges:[],done:{},sel:null,pos:{},cache:{}},V={x:20,y:40,k:1},sample=null;
+var COL={skill:"var(--skill)",role:"var(--role)",project:"var(--project)",cert:"var(--cert)"};
+var W=200,H=66,CW=260,RH=96;
+claude.use("sample").then(function(s){sample=s;if(!s)setMsg("AI is unavailable in this view. Open the page from claude.ai to generate roadmaps.")}).catch(function(){});
+function setMsg(t){msg.style.display=t?"flex":"none";if(t)msg.firstElementChild.textContent=t}
+function el(n,a,p){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function trunc(s,n){s=String(s||"");return s.length>n?s.slice(0,n-1)+"…":s}
+function norm(r){
+  if(!r||!Array.isArray(r.nodes)||r.nodes.length<2)throw new Error("bad");
+  var ids={};r.nodes=r.nodes.slice(0,18).map(function(n,i){n.id=String(n.id||"n"+i);n.title=String(n.title||"Step "+(i+1));n.phase=String(n.phase||"Phase 1");if(!COL[n.type])n.type="skill";ids[n.id]=1;return n});
+  r.edges=(Array.isArray(r.edges)?r.edges:[]).filter(function(e){return ids[e.source]&&ids[e.target]&&e.source!==e.target});
+  return r}
+function layout(){
+  var ph=[],cnt={};S.nodes.forEach(function(n){if(ph.indexOf(n.phase)<0)ph.push(n.phase)});
+  S.phases=ph;S.pos={};
+  S.nodes.forEach(function(n){var c=ph.indexOf(n.phase);cnt[c]=cnt[c]||0;S.pos[n.id]={x:c*CW,y:30+cnt[c]*RH};cnt[c]++});
+  var m=0;for(var k in cnt)m=Math.max(m,cnt[k]);
+  var o=ph.length;S.pos.__off={x:0,y:(m)*0};
+  // center columns vertically
+  S.nodes.forEach(function(n){var c=ph.indexOf(n.phase);S.pos[n.id].y+=(m-cnt[c])*RH/2});
+}
+function render(){
+  g.textContent="";
+  S.phases.forEach(function(p,i){var t=el("text",{x:i*CW,y:14,class:"ph"},g);t.textContent=trunc(p,28)});
+  S.edges.forEach(function(e){var a=S.pos[e.source],b=S.pos[e.target],x1=a.x+W,y1=a.y+H/2,x2=b.x,y2=b.y+H/2,dx=Math.max(40,Math.abs(x2-x1)/2);
+    el("path",{d:"M"+x1+","+y1+" C"+(x1+dx)+","+y1+" "+(x2-dx)+","+y2+" "+x2+","+y2,class:"edge"+(S.done[e.source]&&S.done[e.target]?" done":"")},g)});
+  S.nodes.forEach(function(n){var p=S.pos[n.id];
+    var ge=el("g",{class:"node"+(S.done[n.id]?" done":"")+(S.sel===n.id?" sel":""),transform:"translate("+p.x+","+p.y+")",tabindex:0,role:"button","aria-label":n.title+", "+n.type+(S.done[n.id]?", completed":"")},g);
+    el("rect",{width:W,height:H,rx:12,stroke:COL[n.type]},ge);
+    var t=el("text",{x:12,y:25,"font-weight":"600"},ge);t.textContent=(S.done[n.id]?"✅ ":"")+trunc(n.title,26);
+    var s=el("text",{x:12,y:44,class:"sub"},ge);s.textContent=n.type.toUpperCase()+(n.months?" · ~"+n.months+" mo":"");
+    var d=el("text",{x:12,y:58,class:"sub"},ge);d.textContent=trunc(n.description,34);
+    ge.addEventListener("click",function(){if(!moved)open(n.id)});
+    ge.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();open(n.id)}});
+  });
+  var d=S.nodes.filter(function(n){return S.done[n.id]}).length;
+  $("pt").textContent=d+"/"+S.nodes.length+" done";$("pb").style.width=(S.nodes.length?d*100/S.nodes.length:0)+"%";
+}
+function tf(){g.setAttribute("transform","translate("+V.x+","+V.y+") scale("+V.k+")")}
+function fit(){var r=sv.getBoundingClientRect(),w=S.phases.length*CW,h=0;S.nodes.forEach(function(n){h=Math.max(h,S.pos[n.id].y+H)});
+  V.k=Math.min(1.2,Math.max(.3,Math.min((r.width-30)/w,(r.height-30)/(h+30))));V.x=15;V.y=10;tf()}
+function zoom(f,cx,cy){var r=sv.getBoundingClientRect();cx=cx==null?r.width/2:cx;cy=cy==null?r.height/2:cy;var k=Math.min(3,Math.max(.2,V.k*f));V.x=cx-(cx-V.x)*k/V.k;V.y=cy-(cy-V.y)*k/V.k;V.k=k;tf()}
+$("zi").onclick=function(){zoom(1.25)};$("zo").onclick=function(){zoom(.8)};$("zf").onclick=function(){if(S.nodes.length)fit()};
+sv.addEventListener("wheel",function(e){e.preventDefault();var r=sv.getBoundingClientRect();zoom(e.deltaY<0?1.1:.9,e.clientX-r.left,e.clientY-r.top)},{passive:false});
+var ptr={},moved=false,pd=0,sx=0,sy=0;
+sv.addEventListener("pointerdown",function(e){ptr[e.pointerId]={x:e.clientX,y:e.clientY};moved=false;sx=e.clientX;sy=e.clientY;var k=Object.keys(ptr);if(k.length==2)pd=dist()});
+function dist(){var k=Object.keys(ptr),a=ptr[k[0]],b=ptr[k[1]];return Math.hypot(a.x-b.x,a.y-b.y)}
+sv.addEventListener("pointermove",function(e){var p=ptr[e.pointerId];if(!p)return;var k=Object.keys(ptr);
+  if(k.length==2){var nd;p.x=e.clientX;p.y=e.clientY;nd=dist();if(pd){var r=sv.getBoundingClientRect(),a=ptr[k[0]],b=ptr[k[1]];zoom(nd/pd,(a.x+b.x)/2-r.left,(a.y+b.y)/2-r.top)}pd=nd;moved=true;return}
+  var dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;if(Math.abs(e.clientX-sx)+Math.abs(e.clientY-sy)>6)moved=true;if(moved){V.x+=dx;V.y+=dy;tf()}});
+function up(e){delete ptr[e.pointerId];pd=0;setTimeout(function(){moved=false},0)}
+sv.addEventListener("pointerup",up);sv.addEventListener("pointercancel",up);
+function ask(prompt,tier){if(!sample)return Promise.reject({code:"none",message:"AI unavailable"});return sample.json(prompt,{modelTier:tier||"default",cache:false})}
+function known(){return S.nodes.filter(function(n){return S.done[n.id]}).map(function(n){return n.title})}
+function gen(goal,kn){
+  var p='You are a career coach. Build a realistic, specific career roadmap for: "'+goal+'".\nThe user already knows: '+(kn.length?kn.join(", "):"nothing")+' (omit or mark those as already achieved; route remaining steps accordingly).\nReturn ONLY JSON: {"nodes":[{"id":"n1","title":"max 5 words","phase":"Foundations|Core Skills|Projects & Proof|Entry Role|Growth","type":"skill|role|project|cert","months":2,"description":"one short line"}],"edges":[{"source":"n1","target":"n2"}]}\nUse 11-15 nodes with REAL job titles, REAL certifications and concrete projects for this exact target. Edges must form a sensible prerequisite graph flowing through the phases.';
+  return ask(p,"default").then(norm)}
+function load(r,keep){var prev=S.done;S.nodes=r.nodes;S.edges=r.edges;S.done={};
+  if(keep)S.nodes.forEach(function(n){if(keep.indexOf(n.title.toLowerCase())>=0)S.done[n.id]=1});
+  S.sel=null;layout();render();fit();as.classList.remove("open")}
+$("f").addEventListener("submit",function(e){e.preventDefault();
+  var v=goalEl.value.trim();if(v.length<4){setMsg("Please enter a more specific job goal (at least 4 characters).");return}
+  S.goal=v;goBtn.disabled=true;goBtn.textContent="Building…";setMsg("🧠 AI is reverse-engineering your path…");S.cache={};
+  gen(v,[]).then(function(r){load(r);setMsg("")}).catch(err).finally(function(){goBtn.disabled=false;goBtn.textContent="Generate roadmap"})});
+function err(e){setMsg(e&&e.code==="not_granted"?"Permission to use AI was declined. Reload and allow it.":e&&e.code==="rate_limited"?"Too many requests. Wait a moment and try again.":"Couldn't get a valid roadmap. Try again or rephrase your goal.")}
+function li(a){return (Array.isArray(a)?a:[]).map(function(x){return "<li>"+esc(typeof x==="string"?x:JSON.stringify(x))+"</li>"}).join("")}
+function esc(s){var d=document.createElement("div");d.textContent=String(s);return d.innerHTML}
+function open(id){S.sel=id;render();var n=S.nodes.filter(function(x){return x.id===id})[0];if(!n)return;
+  as.style.setProperty("--c",COL[n.type]);as.classList.add("open");
+  as.innerHTML='<button class="x" aria-label="Close">✕</button><span class="tag">'+n.type+'</span><h2>'+esc(n.title)+'</h2><p class="note">'+esc(n.phase)+(n.months?" · about "+n.months+" months":"")+'</p><p>'+esc(n.description)+'</p><div id="ad"><p class="note">🤖 Generating tailored advice…</p></div><p style="margin-top:14px"><button class="p" id="kn"></button></p>';
+  as.querySelector(".x").onclick=function(){as.classList.remove("open");S.sel=null;render()};
+  var kb=$("kn");kb.textContent=S.done[id]?"↩ Mark as not known":"✅ I already know this";
+  kb.onclick=function(){toggle(n,kb)};
+  var key=S.goal+"|"+n.title,box=$("ad");
+  function show(d){box.innerHTML='<h3>Weekend project</h3><p>'+esc(d.project||"-")+'</p><h3>GitHub repo / resource</h3><p>'+esc(d.repo||"-")+'</p><h3>Interview questions</h3><ul>'+li(d.questions)+'</ul><p class="note">🤖 AI-generated, verify links before relying on them.</p>'}
+  if(S.cache[key]){show(S.cache[key]);return}
+  ask('For someone targeting "'+S.goal+'", give advice for the milestone "'+n.title+'" ('+n.type+'). Return ONLY JSON: {"project":"a concrete weekend project idea","repo":"a real, well-known GitHub repo or resource name to study, with owner/name if possible","questions":["5 specific interview questions"]}',"quick")
+   .then(function(d){S.cache[key]=d;if(S.sel===id)show(d)}).catch(function(){if(S.sel===id)box.innerHTML='<p>Could not load advice. <button id="rt">Retry</button></p>',$("rt").onclick=function(){open(id)}})}
+function toggle(n,btn){
+  if(S.done[n.id]){delete S.done[n.id];render();btn.textContent="✅ I already know this";return}
+  S.done[n.id]=1;render();boom();
+  if(S.nodes.every(function(x){return S.done[x.id]}))return;
+  btn.disabled=true;btn.textContent="Re-routing roadmap…";
+  var kn=known();
+  gen(S.goal,kn).then(function(r){load(r,kn.map(function(t){return t.toLowerCase()}));setMsg("")}).catch(function(){btn.disabled=false;btn.textContent="Re-route failed, kept your progress"})}
+function boom(){for(var i=0;i<14;i++){var c=document.createElement("span");c.className="confetti";c.textContent=["🎉","✨","⭐","🚀"][i%4];c.style.left=Math.random()*100+"vw";c.style.top="-20px";c.style.animationDelay=Math.random()*.4+"s";document.body.appendChild(c);setTimeout(function(x){x.remove()},2000,c)}}
+window.addEventListener("resize",function(){if(S.nodes.length)fit()});
+})();
+</script>
+</body>
+</html>
