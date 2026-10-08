@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PathForge - AI Career Roadmapper</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f4ff;--card:rgba(255,255,255,.82);--tx:#1b1b2f;--mu:#62627f;--pr:#4f46e5;--pr2:#ec4899;--ok:#16a34a;--bd:rgba(120,110,200,.22);--b1:#a5b4fc;--b2:#f9a8d4;--b3:#67e8f9}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f0e24;--card:rgba(30,29,58,.78);--tx:#eceaff;--mu:#a9a7cc;--pr:#818cf8;--bd:rgba(160,150,255,.2);--b1:#4338ca;--b2:#9d174d;--b3:#0e7490}}
+:root[data-theme="dark"]{--bg:#0f0e24;--card:rgba(30,29,58,.78);--tx:#eceaff;--mu:#a9a7cc;--pr:#818cf8;--bd:rgba(160,150,255,.2);--b1:#4338ca;--b2:#9d174d;--b3:#0e7490}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+.bgl{position:fixed;inset:0;z-index:-1;overflow:hidden;background-image:radial-gradient(var(--bd) 1.2px,transparent 1.2px);background-size:26px 26px}
+.bgl i{position:absolute;width:46vmax;height:46vmax;border-radius:50%;filter:blur(80px);opacity:.55;transition:background 1s,transform 1.2s;animation:fl 18s ease-in-out infinite alternate}
+.bgl i:nth-child(1){background:var(--b1);top:-14vmax;left:-10vmax}
+.bgl i:nth-child(2){background:var(--b2);bottom:-16vmax;right:-12vmax;animation-delay:-6s}
+.bgl i:nth-child(3){background:var(--b3);top:30%;left:45%;width:30vmax;height:30vmax;animation-delay:-11s;opacity:.35}
+@keyframes fl{to{transform:translate(5vmax,4vmax) scale(1.12)}}
+body[data-p=profile]{--b1:#86efac;--b3:#7dd3fc}body[data-p=test]{--b1:#c4b5fd;--b2:#67e8f9}body[data-p=roadmap]{--b1:#fcd34d;--b2:#fda4af}body[data-p=dash]{--b1:#a5b4fc;--b3:#c4b5fd}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;flex-wrap:wrap;gap:8px;max-width:1000px;margin:0 auto}
+.logo{font-weight:800;font-size:23px;cursor:pointer}.logo b{background:linear-gradient(90deg,var(--pr),var(--pr2));-webkit-background-clip:text;background-clip:text;color:transparent}
+nav{display:flex;gap:4px;flex-wrap:wrap}nav button{border:0;background:none;color:var(--mu);padding:8px 13px;border-radius:10px;cursor:pointer;font-size:14px}
+nav button.on{background:var(--pr);color:#fff}nav button:disabled{opacity:.4;cursor:default}
+main{max-width:860px;margin:0 auto;padding:10px 16px 30px}
+.card{background:var(--card);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--bd);border-radius:20px;padding:26px;margin-bottom:16px;box-shadow:0 8px 30px rgba(80,70,180,.1)}
+h1{font-size:clamp(28px,6vw,44px);margin:0 0 10px;line-height:1.12}h2{margin:0 0 12px}h3{margin:0 0 6px;font-size:16px}p{color:var(--mu);line-height:1.55;margin:6px 0}
+.grad{background:linear-gradient(90deg,var(--pr),var(--pr2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero{text-align:center;padding:42px 24px}.tag{display:inline-block;padding:5px 14px;border-radius:99px;background:rgba(79,70,229,.12);color:var(--pr);font-size:13px;font-weight:600;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}.grid .card{margin:0;padding:20px}.ic{font-size:28px}
+label.l{display:block;font-size:13px;color:var(--mu);margin:14px 0 4px}
+input,select{width:100%;padding:11px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font-size:15px}
+.btn{background:linear-gradient(90deg,var(--pr),var(--pr2));color:#fff;border:0;padding:12px 24px;border-radius:12px;font-size:15px;cursor:pointer;margin-top:16px;font-weight:600}
+.btn.g{background:none;color:var(--pr);border:1px solid var(--pr)}.btn:disabled{opacity:.5}
+.opt{display:block;width:100%;text-align:left;margin:8px 0;padding:13px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);cursor:pointer;font-size:15px}
+.opt.sel{border-color:var(--pr);background:rgba(79,70,229,.14)}
+.bar{height:9px;background:var(--bd);border-radius:9px;overflow:hidden;margin:10px 0}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--pr),var(--pr2));transition:width .4s}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0}.chip{padding:6px 12px;border-radius:99px;border:1px solid var(--bd);background:var(--card);font-size:13px;cursor:pointer;color:var(--tx)}
+.chip.on{background:var(--pr);color:#fff;border-color:var(--pr)}.chip.sg{border-style:dashed;color:var(--mu)}
+.tl{position:relative;margin-left:18px;padding-left:28px;border-left:3px solid var(--bd)}
+.st{position:relative;margin:0 0 16px;padding:16px;border-radius:16px;border:1px solid var(--bd);background:var(--card)}
+.st:before{content:attr(data-n);position:absolute;left:-47px;top:14px;width:32px;height:32px;border-radius:50%;background:var(--pr);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px;border:3px solid var(--bg)}
+.st.d:before{content:"✓";background:var(--ok)}.st.d{opacity:.7}
+.st label{display:flex;gap:10px;cursor:pointer;align-items:flex-start;font-weight:600}.st input{width:auto;margin-top:3px}
+.gb{border:1px solid var(--pr);background:none;color:var(--pr);border-radius:10px;padding:6px 12px;font-size:13px;cursor:pointer;margin-top:10px;font-weight:600}.gd{margin-top:12px;padding:14px;border-radius:12px;background:rgba(79,70,229,.08);font-size:14px;line-height:1.5}.gd h4{margin:10px 0 4px;font-size:14px}.gd ol,.gd ul{margin:0;padding-left:20px;color:var(--tx)}.gd .chips{margin:4px 0}
+.meta{font-size:12px;color:var(--pr);font-weight:600;margin-top:6px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}.stat div{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;color:var(--mu);font-size:13px}.stat b{font-size:26px;display:block;color:var(--tx)}
+.note{font-size:12px;text-align:center;color:var(--mu);padding:0 12px 20px}
+</style></head><body data-p="home">
+<div class="bgl"><i></i><i></i><i></i></div>
+<header><div class="logo" onclick="go('home')">Path<b>Forge</b></div><nav id="nav"></nav></header>
+<main id="app"></main>
+<div class="note">Roadmaps and advice are AI-generated. Verify before relying on them.</div>
+<script>
+const FIELDS={
+"Web Development":[["Which language structures a web page?","HTML","Python","SQL","C"],["Which CSS property changes text color?","color","font-style","border","margin"],["Which JS keyword declares a block-scoped variable?","let","var","dim","set"],["Which HTTP method is used to fetch data?","GET","PUSH","BURN","DROP"]],
+"Data Science":[["Which library is used for dataframes in Python?","pandas","flask","pygame","tkinter"],["What does a mean measure?","Average","Spread","Maximum","Count"],["Which chart suits showing a distribution?","Histogram","Pie of one slice","Flowchart","Gantt"],["Which is a supervised learning task?","Classification","Clustering","Dimension reduction","Association"]],
+"Digital Marketing":[["What does SEO stand for?","Search Engine Optimization","Social Engagement Online","Site Event Order","Search Email Output"],["CTR means?","Click-Through Rate","Cost To Retain","Content Time Ratio","Customer Total Revenue"],["Which is a paid channel?","Google Ads","Organic search","Word of mouth","Newsletter list"],["What is a conversion?","User completes a goal","Page loads","Ad is shown","Email opens"]],
+"UI/UX Design":[["What does UX stand for?","User Experience","User Extension","Unified Xerox","Universal Index"],["A wireframe is a...","Low-fidelity layout","Final product","Database","Logo"],["Good contrast helps with...","Readability","File size","Server speed","Billing"],["Which research method asks users directly?","Interview","Compile","Deploy","Minify"]]};
+const SK={"Web Development":["HTML","CSS","JavaScript","React","Git","Node.js"],"Data Science":["Python","Statistics","SQL","pandas","Excel","Machine Learning"],"Digital Marketing":["SEO","Social Media","Google Ads","Analytics","Copywriting","Email"],"UI/UX Design":["Figma","Wireframing","User Research","Prototyping","Typography","Color Theory"]};
+const ROAD={"Web Development":[["HTML & CSS basics",3,"Build a static page, learn semantic tags and flexbox."],["JavaScript fundamentals",4,"Variables, functions, DOM and fetch."],["Responsive design",2,"Media queries, mobile-first layouts."],["Git & GitHub",1,"Commits, branches, pull requests."],["React",5,"Components, state, hooks."],["Node.js & APIs",5,"Build a REST API with a database."],["Capstone projects",6,"Ship 3 projects and deploy them."]],
+"Data Science":[["Python",3,"Syntax, functions, files."],["Statistics",4,"Mean, variance, probability, tests."],["pandas & NumPy",3,"Clean and analyse real datasets."],["Data visualization",2,"matplotlib and storytelling."],["SQL",3,"Joins, aggregates, window functions."],["Machine Learning",6,"Regression, trees, evaluation."],["Capstone project",6,"End-to-end project on Kaggle data."]],
+"Digital Marketing":[["Marketing fundamentals",2,"Funnels, personas, positioning."],["SEO",4,"Keywords, on-page, link building."],["Social Media",3,"Content calendar and reels."],["Google Ads",3,"Search campaigns and budgets."],["Analytics",3,"GA4 reports and goals."],["Email",2,"Lists, automation, A/B tests."],["Live campaign",4,"Run a real campaign and report ROI."]],
+"UI/UX Design":[["Design principles",2,"Hierarchy, spacing, contrast."],["User Research",3,"Interviews, personas, journeys."],["Wireframing",2,"Low-fi layouts for key flows."],["Figma",4,"Components, auto layout, variants."],["Prototyping",3,"Clickable flows and micro-interactions."],["Usability testing",2,"Test with 5 users and iterate."],["Portfolio",5,"3 detailed case studies."]]};
+const S={page:"home",profile:{name:"",edu:"",field:"Web Development",level:"Beginner",hours:"10",skills:[]},qs:null,ans:[],qi:0,score:null,road:null,done:{}};
+try{const o=JSON.parse(localStorage.getItem("pf")||"{}");Object.assign(S,o);S.profile=Object.assign({skills:[]},S.profile)}catch(e){}
+const save=()=>{try{localStorage.setItem("pf",JSON.stringify(S))}catch(e){}};
+const $=s=>document.querySelector(s),esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pages=[["home","Home"],["profile","Profile"],["test","Skill test"],["roadmap","Roadmap"],["dash","Dashboard"]];
+function reach(p){const i=pages.findIndex(x=>x[0]===p);return i<=1||(i==2&&S.profile.name)||(i==3&&S.score!=null)||(i==4&&S.road)}
+function go(p){S.page=p;save();render();scrollTo(0,0)}
+function fallbackQs(){return FIELDS[S.profile.field].map(q=>{const o=q.slice(1),c=o[0],sh=[...o].sort(()=>Math.random()-.5);return{q:q[0],o:sh,a:sh.indexOf(c)}})}
+function normalize(a){if(!Array.isArray(a))return null;const r=a.filter(x=>x&&x.q&&Array.isArray(x.o)&&x.o.length>=2&&Number.isInteger(x.a)&&x.a>=0&&x.a<x.o.length);return r.length>=3?r.slice(0,5):null}
+async function smp(){try{return await Promise.race([claude.use("sample"),new Promise(r=>setTimeout(()=>r(null),4000))])}catch(e){return null}}
+async function genTest(){
+ S.qs=null;S.qi=0;S.ans=[];S.score=null;render();let qs=null;const P=S.profile;
+ try{const sm=await smp();if(sm){const r=await sm.json(`Create 5 multiple-choice questions for a ${P.level} learner in ${P.field}. Learner already knows: ${P.skills.join(", ")||"nothing yet"}; focus on those skills. Return ONLY a JSON array of {"q":string,"o":[4 strings],"a":correct index}.`,{cache:false});qs=normalize(Array.isArray(r)?r:r&&r.questions)}}catch(e){}
+ S.src=qs?"AI-generated":"Practice question bank";S.qs=qs||fallbackQs();save();render()}
+function normRoad(a){if(!Array.isArray(a)||a.length<4)return null;return a.slice(0,8).map(x=>typeof x=="string"?[x,3,""]:[String(x.title||x.t||""),+(x.weeks||x.w)||3,String(x.desc||x.d||"")]).filter(x=>x[0])}
+async function genRoad(){
+ S.road=null;S.done={};S.open=null;render();const P=S.profile;let r=null;
+ try{const sm=await smp();if(sm){const x=await sm.json(`Make a 7-step career roadmap for ${P.name} (${P.edu||"student"}), field ${P.field}, level ${P.level}, ${P.hours} hours/week, test score ${S.score}/${S.qs.length}. Already known skills (skip or shorten them): ${P.skills.join(", ")||"none"}. Return ONLY a JSON array of 7 objects {"title":string,"weeks":number,"desc":"one practical sentence"}.`,{cache:false});r=normRoad(x)}}catch(e){}
+ if(!r){const k=P.skills.map(s=>s.toLowerCase());r=ROAD[P.field].filter(s=>!k.includes(s[0].toLowerCase())).map(s=>[...s]);if(P.level=="Advanced")r.forEach(s=>s[1]=Math.max(1,Math.round(s[1]/2)))}
+ S.road=r;S.src2=r&&S.src2;save();render()}
+function fbG(t,d){return{how:[`Start with a short beginner tutorial or video on "${t}" to get the big picture.`,"Take notes and write down every new term you meet.","Practise daily: type out examples yourself instead of only watching.","Build a small project that uses it, then fix your own mistakes.","Revise at the end of the week and test yourself."],topics:["Basic concepts and terms","Core tools / syntax","Common mistakes","Real-world examples","Best practices","Mini project"],project:d||`Build a small project that applies ${t}.`,tip:"Study a little every day rather than a lot once a week."}}
+function normG(g){if(!g||!Array.isArray(g.how)||!Array.isArray(g.topics)||g.how.length<2)return null;return{how:g.how.slice(0,7).map(String),topics:g.topics.slice(0,10).map(String),project:String(g.project||""),tip:String(g.tip||"")}}
+function guideHtml(i){const t=S.road[i][0];if(S.gl===i)return`<div class="gd">Preparing your guide…</div>`;const g=S.guides[t];if(!g)return"";return`<div class="gd"><h4>How to do it</h4><ol>${g.how.map(x=>`<li>${esc(x)}</li>`).join("")}</ol><h4>What to learn</h4><div class="chips">${g.topics.map(x=>`<span class="chip">${esc(x)}</span>`).join("")}</div>${g.project?`<h4>Practice project</h4><p style="color:var(--tx);margin:0">${esc(g.project)}</p>`:""}${g.tip?`<h4>Tip</h4><p style="color:var(--tx);margin:0">💡 ${esc(g.tip)}</p>`:""}</div>`}
+async function openStep(i){if(S.open===i){S.open=null;render();return}S.open=i;const st=S.road[i],t=st[0],P=S.profile;S.guides=S.guides||{};
+ if(!S.guides[t]){S.gl=i;render();let g=null;try{const sm=await smp();if(sm){const r=await sm.json(`A ${P.level} learner of ${P.field} (${P.hours} hrs/week, already knows: ${P.skills.join(", ")||"nothing"}) wants to learn "${t}" (about ${st[1]} weeks). Explain how to learn it. Return ONLY JSON {"how":[4-6 short practical steps],"topics":[6-9 short topics to learn],"project":"one practice project","tip":"one tip"}.`,{cache:false});g=normG(r)}}catch(e){}
+ S.guides[t]=g||fbG(t,st[2]);S.gl=null;save()}render()}
+function render(){
+ document.body.dataset.p=S.page;
+ $("#nav").innerHTML=pages.map(([k,l])=>`<button class="${S.page===k?"on":""}" ${reach(k)?"":"disabled"} onclick="go('${k}')">${l}</button>`).join("");
+ const a=$("#app"),P=S.profile;
+ if(S.page==="home")a.innerHTML=`<div class="card hero"><span class="tag">✨ AI-powered career guidance</span><h1>Forge your <span class="grad">career path</span>,<br>one step at a time</h1><p style="max-width:540px;margin:10px auto">Tell us about yourself, take a quick skill test and get a personalised roadmap with weekly goals and progress tracking.</p><button class="btn" onclick="go('profile')">Get started free →</button> ${S.road?`<button class="btn g" onclick="go('dash')">Continue</button>`:""}</div>
+ <div class="grid"><div class="card"><div class="ic">👤</div><h3>1. Build profile</h3><p>Your field, level, time and current skills.</p></div><div class="card"><div class="ic">🧠</div><h3>2. Skill test</h3><p>Quick questions tuned to your field.</p></div><div class="card"><div class="ic">🗺️</div><h3>3. Roadmap</h3><p>Step-by-step plan with week estimates.</p></div><div class="card"><div class="ic">📊</div><h3>4. Dashboard</h3><p>Track progress and stay on course.</p></div></div>
+ <div class="card" style="margin-top:16px"><h3>Fields we cover</h3><div class="chips">${Object.keys(FIELDS).map(f=>`<span class="chip">${f}</span>`).join("")}</div></div>`;
+ else if(S.page==="profile")a.innerHTML=`<div class="card"><h2>Your profile</h2>
+ <label class="l">Name</label><input id="n" value="${esc(P.name)}">
+ <label class="l">Education</label><input id="e" value="${esc(P.edu)}" placeholder="e.g. B.Tech 2nd year">
+ <label class="l">Field of interest</label><select id="f" onchange="chField(this.value)">${Object.keys(FIELDS).map(f=>`<option ${f===P.field?"selected":""}>${f}</option>`).join("")}</select>
+ <label class="l">Current level</label><select id="l">${["Beginner","Intermediate","Advanced"].map(f=>`<option ${f===P.level?"selected":""}>${f}</option>`).join("")}</select>
+ <label class="l">Hours per week</label><input id="h" type="number" min="1" max="60" value="${esc(P.hours)}">
+ <label class="l">Skills you already have (tap or type + Enter)</label>
+ <div class="chips" id="sk">${P.skills.map((s,i)=>`<span class="chip on" onclick="rmSk(${i})">${esc(s)} ✕</span>`).join("")}</div>
+ <div class="chips">${SK[P.field].filter(s=>!P.skills.includes(s)).map(s=>`<span class="chip sg" onclick="addSk('${s}')">+ ${s}</span>`).join("")}</div>
+ <input id="si" placeholder="Add another skill…" onkeydown="if(event.key==='Enter'){addSk(this.value);event.preventDefault()}">
+ <button class="btn" onclick="saveProfile()">Save &amp; start skill test</button></div>`;
+ else if(S.page==="test"){
+  if(!S.qs&&!S.loading){S.loading=1;genTest().finally(()=>S.loading=0)}
+  if(!S.qs)a.innerHTML=`<div class="card"><h2>Preparing your test…</h2><p>Creating questions for ${esc(P.field)}.</p><div class="bar"><i style="width:60%"></i></div></div>`;
+  else if(S.score!=null)a.innerHTML=`<div class="card"><h2>Test complete</h2><h1 class="grad">${S.score} / ${S.qs.length}</h1><p>${S.src}</p><button class="btn" onclick="go('roadmap');genRoad()">Build my roadmap</button> <button class="btn g" onclick="genTest()">Retake</button></div>`;
+  else{const q=S.qs[S.qi],sel=S.ans[S.qi];a.innerHTML=`<div class="card"><p>Question ${S.qi+1} of ${S.qs.length} · ${S.src}</p><div class="bar"><i style="width:${S.qi/S.qs.length*100}%"></i></div><h2>${esc(q.q)}</h2>${q.o.map((o,i)=>`<button class="opt ${sel===i?"sel":""}" onclick="pick(${i})">${esc(o)}</button>`).join("")}<button class="btn" ${sel==null?"disabled":""} onclick="nextQ()">${S.qi==S.qs.length-1?"Finish":"Next"}</button></div>`}}
+ else if(S.page==="roadmap"){
+  if(!S.road&&!S.rl){S.rl=1;genRoad().finally(()=>S.rl=0)}
+  if(!S.road)a.innerHTML=`<div class="card"><h2>Building your roadmap…</h2><div class="bar"><i style="width:60%"></i></div></div>`;
+  else{const tw=S.road.reduce((s,x)=>s+x[1],0),n=S.road.length,d=Object.values(S.done).filter(Boolean).length,pc=Math.round(d/n*100);
+  a.innerHTML=`<div class="card"><h2>${esc(P.field)} roadmap for ${esc(P.name)}</h2><p>${n} steps · about ${tw} weeks at ${esc(P.hours)} hrs/week${P.skills.length?" · skipping what you already know":""}</p><div class="bar"><i style="width:${pc}%"></i></div><p>${d} of ${n} done (${pc}%)</p></div>
+  <div class="tl">${S.road.map((s,i)=>`<div class="st ${S.done[i]?"d":""}" data-n="${i+1}"><label><input type="checkbox" ${S.done[i]?"checked":""} onchange="tick(${i},this.checked)"> ${esc(s[0])}</label>${s[2]?`<p>${esc(s[2])}</p>`:""}<div class="meta">⏱ ~${s[1]} week${s[1]>1?"s":""}</div><button class="gb" onclick="openStep(${i})">${S.open===i?"Hide guide ▲":"📘 How to learn this ▼"}</button>${S.open===i?guideHtml(i):""}</div>`).join("")}</div>
+  <button class="btn" onclick="go('dash')">Open dashboard</button> <button class="btn g" onclick="S.road=null;genRoad()">Regenerate</button>`}}
+ else{const n=S.road?S.road.length:1,d=Object.values(S.done).filter(Boolean).length,pc=Math.round(d/n*100),nx=S.road&&S.road.findIndex((_,i)=>!S.done[i]);
+  a.innerHTML=`<div class="card"><h2>Hi ${esc(P.name)} 👋</h2><div class="stat"><div><b>${pc}%</b>Roadmap done</div><div><b>${S.score}/${S.qs?S.qs.length:0}</b>Skill test</div><div><b>${esc(P.hours)}h</b>Per week</div><div><b>${P.skills.length}</b>Skills known</div></div><div class="bar"><i style="width:${pc}%"></i></div>${nx>=0&&S.road?`<p>Next up: <b>${esc(S.road[nx][0])}</b></p>`:"<p>🎉 Roadmap complete!</p>"}<button class="btn" onclick="go('roadmap')">View roadmap</button> <button class="btn g" onclick="if(confirm('Reset everything?')){try{localStorage.removeItem('pf')}catch(e){}location.reload()}">Reset</button></div>`}}
+function chField(v){S.profile.field=v;S.profile.skills=[];readForm();render()}
+function readForm(){const g=i=>document.getElementById(i);if(g("n")){Object.assign(S.profile,{name:g("n").value,edu:g("e").value,level:g("l").value,hours:g("h").value||"10"})}}
+function addSk(v){v=String(v).trim();if(!v)return;readForm();if(!S.profile.skills.includes(v))S.profile.skills.push(v);render()}
+function rmSk(i){readForm();S.profile.skills.splice(i,1);render()}
+function saveProfile(){readForm();if(!S.profile.name.trim()){$("#n").focus();return}S.qs=null;S.score=null;S.road=null;S.page="test";save();render()}
+function pick(i){S.ans[S.qi]=i;render()}
+function nextQ(){if(S.qi<S.qs.length-1)S.qi++;else S.score=S.qs.reduce((s,q,i)=>s+(S.ans[i]===q.a?1:0),0);save();render()}
+function tick(i,v){S.done[i]=v;save();render()}
+render();
+</script></body></html>
